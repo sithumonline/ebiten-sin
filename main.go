@@ -13,17 +13,22 @@ const (
 )
 
 type Game struct {
-	offscreen    *ebiten.Image
-	offscreenPix []byte
+	offscreen     *ebiten.Image
+	offscreenPix  []byte
+	centerX, size float64
+	isRight       bool
 }
 
 func NewGame() *Game {
 	g := &Game{
 		offscreen:    ebiten.NewImage(screenWidth, screenHeight),
 		offscreenPix: make([]byte, screenWidth*screenHeight*4),
+		centerX:      0.0,
+		size:         4,
+		isRight:      true,
 	}
 	// Now it is not feasible to call updateOffscreen every frame due to performance.
-	g.updateOffscreen(0.0, 0.0, 4)
+	g.updateOffscreen(g.centerX, 0.0, g.size)
 	return g
 }
 
@@ -73,10 +78,23 @@ func (gm *Game) updateOffscreen(centerX, centerY, size float64) {
 }
 
 func (g *Game) Update() error {
+	if g.isRight {
+		g.centerX += 0.1
+		if g.centerX > 2.0 {
+			g.isRight = false
+		}
+	} else {
+		g.centerX -= 0.1
+		if g.centerX < -2.0 {
+			g.isRight = true
+		}
+	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	g.updateOffscreen(g.centerX, 0.0, g.size)
 	screen.DrawImage(g.offscreen, nil)
 }
 
